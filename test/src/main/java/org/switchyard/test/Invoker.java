@@ -22,6 +22,7 @@ package org.switchyard.test;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
 
@@ -31,6 +32,7 @@ import org.switchyard.ExchangeHandler;
 import org.switchyard.ExchangePattern;
 import org.switchyard.HandlerException;
 import org.switchyard.Message;
+import org.switchyard.Property;
 import org.switchyard.ServiceDomain;
 import org.switchyard.ServiceReference;
 import org.switchyard.common.xml.XMLHelper;
@@ -188,6 +190,15 @@ public class Invoker {
      * @param messagePayload The message payload.
      */
     public void sendInOnly(Object messagePayload) {
+        sendInOnly(messagePayload, null);
+    }
+
+    /**
+     * Send an IN_ONLY message to the target Service.
+     * @param messagePayload The message payload.
+     * @param propertySet The Properties of the Context.
+     */
+    public void sendInOnly(Object messagePayload, Set<Property> propertySet) {
         ExchangeHandlerProxy exchangeHandlerProxy = _exchangeHandlerProxy;
         ResponseCatcher responseCatcher = null;
 
@@ -198,17 +209,33 @@ public class Invoker {
 
         Exchange exchange = createExchange(ExchangePattern.IN_ONLY, exchangeHandlerProxy._exchangeHandlerProxy);
 
+        if (propertySet != null) {
+            exchange.getContext().setProperties(propertySet);
+        }
+
         Message message = exchange.createMessage().setContent(messagePayload);
         exchange.send(message);
     }
 
     /**
+     *
+     * @param messagePayload
+     * @return
+     * @throws InvocationFaultException
+     */
+    public Message sendInOut(Object messagePayload) throws InvocationFaultException {
+        return sendInOut(messagePayload, null);
+    }
+
+    /**
      * Send an IN_OUT message to the target Service.
+     *
      * @param messagePayload The message payload.
+     * @param propertySet The Properties of the context.
      * @return The response message.
      * @throws InvocationFaultException if the message exchange produces a fault
      */
-    public Message sendInOut(Object messagePayload) throws InvocationFaultException {
+    public Message sendInOut(Object messagePayload, Set<Property> propertySet) throws InvocationFaultException {
         ExchangeHandlerProxy exchangeHandlerProxy = _exchangeHandlerProxy;
         ResponseCatcher responseCatcher = null;
 
@@ -218,6 +245,10 @@ public class Invoker {
         }
 
         Exchange exchange = createExchange(ExchangePattern.IN_OUT, exchangeHandlerProxy._exchangeHandlerProxy);
+
+        if (propertySet != null) {
+            exchange.getContext().setProperties(propertySet);
+        }
 
         Message message = exchange.createMessage().setContent(messagePayload);
         exchange.send(message);
